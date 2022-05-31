@@ -9,6 +9,8 @@ import {
 } from "react-native";
 import { Camera } from "expo-camera";
 import { FontAwesome } from "@expo/vector-icons";
+import * as Permissions from 'expo-permissions';
+import * as MediaLibrary from 'expo-media-library';
 
 export default function App() {
   const camRef = useRef(null);
@@ -22,6 +24,12 @@ export default function App() {
       const { status } = await Camera.requestPermissionsAsync();
       setHasPermission(status === "granted");
     })();
+
+    (async () => {
+      const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+      setHasPermission(status === "granted");
+    })();
+
   }, []);
 
   if (hasPermission === null) {
@@ -39,6 +47,16 @@ export default function App() {
       setOpen(true);
       // console.log(data);
     }
+  }
+
+  async function savePicture(){
+    const asset = await MediaLibrary.createAssetAsync(capturedPhoto)
+    .then(() =>{
+      alert('Salvo com sucesso!');
+    })
+    .catch(error => {
+      console.log('err', error);
+    })
   }
 
   return (
@@ -93,6 +111,7 @@ export default function App() {
               margin: 20,
             }}
           >
+            <View style={{ margin: 10, flexDirection: 'row'}}>
             <TouchableOpacity
               style={{ margin: 10 }}
               onPress={() => setOpen(false)}
@@ -100,7 +119,16 @@ export default function App() {
               <FontAwesome name="window-close" size={50} color="#ff0000" />
             </TouchableOpacity>
 
-            <Image style={{ width: '100%', height: 300, borderRadius: 20 }} source={{uri: capturedPhoto}}/>
+            <TouchableOpacity
+              style={{ margin: 10 }}
+              onPress={savePicture}
+            >
+              <FontAwesome name="upload" size={50} color="#121212" />
+            </TouchableOpacity>
+
+            </View>
+
+            <Image style={{ width: '100%', height: 400, borderRadius: 20 }} source={{uri: capturedPhoto}}/>
           </View>
         </Modal>
       )}
